@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html class="invite-locked">
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    html.invite-locked,html.invite-locked body{height:100%;overflow:hidden!important;overscroll-behavior:none}
+    html.invite-locked body{position:fixed;inset:0;width:100%}
+    .invitation-hidden{display:none!important}
+    
     *{box-sizing:border-box}body{margin:0;background:var(--theme-bg,#eff8fa);color:var(--theme-text,#205e72);font-family:var(--theme-font,Georgia),serif;text-align:center;overflow-x:hidden;overflow-y:auto;min-height:100%;}
     .cover{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 18px;background:linear-gradient(color-mix(in srgb,var(--theme-bg) 88%,white 12%),var(--theme-bg)),radial-gradient(circle at 15% 15%,color-mix(in srgb,var(--theme-accent) 30%,transparent) 0 2px,transparent 3px)}
     .inner{max-width:950px;width:100%}.eyebrow{letter-spacing:5px;text-transform:uppercase;color:#b58b59;font:11px Arial,sans-serif}
@@ -25,7 +29,7 @@
 <div id="app"><div class="cover"><div class="inner">Memuat undangan...</div></div></div><span class="petal p1">✿</span><span class="petal p2">❀</span><span class="petal p3">✿</span><span class="petal p4">❀</span><button id="musicDisc" class="music-disc" aria-label="Putar musik"></button>
 <script>
 const GUEST_TOKEN = new URLSearchParams(location.search).get('guest') || '';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyAJ9UlLcfXbGRWQY-KVE-kFefiOHE8T1bOxXUFXPaD8DVJFT9XM0sR0wJ5vY24NMZS/exec';
+const APPS_SCRIPT_URL = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
 let DATA=null;
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function mediaUrl(url,kind){const raw=String(url||'');if(!/drive\.google\.com/.test(raw))return raw;const m=raw.match(/[?&]id=([A-Za-z0-9_-]+)/);if(!m)return raw;return 'https://drive.google.com/uc?export='+(kind==='audio'?'download':'view')+'&id='+m[1];}
@@ -57,6 +61,15 @@ function countdown(date,time,id){
  tick();setInterval(tick,1000);
 }
 
+
+function openInvitation(){
+ const invitation=document.getElementById('invitation');
+ if(!invitation)return;
+ invitation.classList.remove('invitation-hidden');
+ document.documentElement.classList.remove('invite-locked');
+ document.body.classList.remove('invite-locked');
+ requestAnimationFrame(()=>invitation.scrollIntoView({behavior:'smooth',block:'start'}));
+}
 function render(d){
  DATA=d;const p=d.profile||{};
  document.documentElement.style.setProperty('--theme-bg',p.themeBg||'#F8F4EF');
@@ -70,7 +83,7 @@ function render(d){
  const youtube=p.youtubeUrl?`<div class="section"><h2>Video</h2><iframe width="100%" height="315" style="max-width:650px;border:0" src="https://www.youtube-nocookie.com/embed/${esc(videoId(p.youtubeUrl))}" allowfullscreen></iframe></div>`:'';
  document.getElementById('app').innerHTML=`
  <section class="cover"><div class="inner"><div class="eyebrow">${esc(p.pageTitle||'The Engagement Of')}</div><h1>${esc(p.groomName||'Nama Pria')} &amp; ${esc(p.brideName||'Nama Wanita')}</h1><p class="greeting">${esc(p.coverGreeting||'Yth. Bapak/Ibu/Saudara/i')}</p><div class="guest">${esc(name)}</div><button id="openInvite">${esc(p.openButton||'Buka Undangan')}</button></div></section>
- <div id="invitation">
+ <div id="invitation" class="invitation-hidden">
  <section class="section"><div class="eyebrow">The Couple</div><h2>Dengan penuh kebahagiaan</h2><div class="couple">
  <div class="person">${p.groomPhoto?`<img src="${esc(mediaUrl(p.groomPhoto,'image'))}" alt="Foto calon pria">`:''}<h3>${esc(p.groomName)}</h3><div class="parents">Putra dari<br>${esc(p.groomFather)} &amp; ${esc(p.groomMother)}</div></div>
  <div class="person">${p.bridePhoto?`<img src="${esc(mediaUrl(p.bridePhoto,'image'))}" alt="Foto calon wanita">`:''}<h3>${esc(p.brideName)}</h3><div class="parents">Putri dari<br>${esc(p.brideFather)} &amp; ${esc(p.brideMother)}</div></div></div></section>
@@ -82,7 +95,7 @@ function render(d){
  <section class="section"><h2>Ucapan & Doa</h2><form class="form" id="wishForm"><label>Ucapan Anda</label><textarea id="wishMessage" required></textarea><p><button>Kirim Ucapan</button></p><div id="wishMsg"></div></form><div id="wishes">${wishes}</div></section>
  <footer>${esc(p.creditText||'Created with love')} · ${esc(p.creditName||'')}</footer></div>`;
  if(p.overlayGifUrl&&!document.getElementById('decorGif')){const deco=document.createElement('img');deco.id='decorGif';deco.src=mediaUrl(p.overlayGifUrl,'image');deco.alt='';deco.style.cssText=`position:fixed;z-index:5;pointer-events:none;opacity:${Math.max(0,Math.min(1,Number(p.overlayGifOpacity||.65)))};width:${Math.max(40,Math.min(320,Number(p.overlayGifSize||140)))}px;${p.overlayGifPosition==='top-left'?'top:8px;left:8px;':p.overlayGifPosition==='bottom-left'?'bottom:8px;left:8px;':p.overlayGifPosition==='bottom-right'?'bottom:8px;right:8px;':'top:8px;right:8px;'}`;document.body.appendChild(deco);}
- const disc=document.getElementById('musicDisc');if(p.musicUrl){disc.style.display='flex';window._music=window._music||new Audio(mediaUrl(p.musicUrl,'audio'));window._music.loop=true;disc.onclick=()=>{if(window._music.paused){window._music.play().then(()=>disc.classList.add('playing')).catch(()=>alert('Browser menolak pemutaran. Coba tekan sekali lagi.'));}else{window._music.pause();disc.classList.remove('playing');}};document.getElementById('openInvite').onclick=()=>{window._music.play().then(()=>disc.classList.add('playing')).catch(()=>{});document.getElementById('invitation').scrollIntoView({behavior:'smooth'});};}else{document.getElementById('openInvite').onclick=()=>document.getElementById('invitation').scrollIntoView({behavior:'smooth'});}
+ const disc=document.getElementById('musicDisc');if(p.musicUrl){disc.style.display='flex';window._music=window._music||new Audio(mediaUrl(p.musicUrl,'audio'));window._music.loop=true;disc.onclick=()=>{if(window._music.paused){window._music.play().then(()=>disc.classList.add('playing')).catch(()=>alert('Browser menolak pemutaran. Coba tekan sekali lagi.'));}else{window._music.pause();disc.classList.remove('playing');}};document.getElementById('openInvite').onclick=()=>{openInvitation();if(window._music){window._music.play().then(()=>disc.classList.add('playing')).catch(()=>{});}};}else{document.getElementById('openInvite').onclick=()=>openInvitation();}
  (d.events||[]).forEach((e,i)=>countdown(String(e.date).slice(0,10),e.startTime,'count'+i));
  const rf=document.getElementById('rsvpForm');if(rf)rf.onsubmit=async ev=>{ev.preventDefault();try{await postPublic('submitRsvp',{data:{eventId:document.getElementById('rsvpEvent').value,attendance:document.getElementById('attendance').value,count:document.getElementById('count').value,note:document.getElementById('rsvpNote').value,answers:[...document.querySelectorAll('.customAnswer')].map(x=>x.value)}});document.getElementById('rsvpMsg').textContent='Permintaan RSVP dikirim. Terima kasih.';}catch(err){document.getElementById('rsvpMsg').textContent=err.message;}};
  document.getElementById('wishForm').onsubmit=async ev=>{ev.preventDefault();try{await postPublic('submitWish',{message:document.getElementById('wishMessage').value});document.getElementById('wishMsg').textContent='Ucapan dikirim dan menunggu moderasi.';document.getElementById('wishMessage').value='';}catch(err){document.getElementById('wishMsg').textContent=err.message;}};
