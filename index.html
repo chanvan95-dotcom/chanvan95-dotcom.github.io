@@ -29,7 +29,7 @@
 <div id="app"><div class="cover"><div class="inner">Memuat undangan...</div></div></div><span class="petal p1">✿</span><span class="petal p2">❀</span><span class="petal p3">✿</span><span class="petal p4">❀</span><button id="musicDisc" class="music-disc" aria-label="Putar musik"></button>
 <script>
 const GUEST_TOKEN = new URLSearchParams(location.search).get('guest') || '';
-const APPS_SCRIPT_URL = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyAJ9UlLcfXbGRWQY-KVE-kFefiOHE8T1bOxXUFXPaD8DVJFT9XM0sR0wJ5vY24NMZS/exec';
 let DATA=null;
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function mediaUrl(url,kind){const raw=String(url||'');if(!/drive\.google\.com/.test(raw))return raw;const m=raw.match(/[?&]id=([A-Za-z0-9_-]+)/);if(!m)return raw;return 'https://drive.google.com/uc?export='+(kind==='audio'?'download':'view')+'&id='+m[1];}
