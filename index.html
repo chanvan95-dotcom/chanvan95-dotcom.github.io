@@ -32,7 +32,16 @@ const GUEST_TOKEN = new URLSearchParams(location.search).get('guest') || '';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyAJ9UlLcfXbGRWQY-KVE-kFefiOHE8T1bOxXUFXPaD8DVJFT9XM0sR0wJ5vY24NMZS/exec';
 let DATA=null;
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function mediaUrl(url,kind){const raw=String(url||'');if(!/drive\.google\.com/.test(raw))return raw;const m=raw.match(/[?&]id=([A-Za-z0-9_-]+)/);if(!m)return raw;return 'https://drive.google.com/uc?export='+(kind==='audio'?'download':'view')+'&id='+m[1];}
+function mediaUrl(url,kind){
+ const raw=String(url||'').trim();if(!raw)return '';
+ const m=raw.match(/\/file\/d\/([A-Za-z0-9_-]+)/)||raw.match(/[?&]id=([A-Za-z0-9_-]+)/)||raw.match(/\/d\/([A-Za-z0-9_-]+)/);
+ if(/drive\.google\.com/.test(raw)&&m){
+  const id=m[1];
+  return kind==='audio'?'https://drive.google.com/uc?export=download&id='+id:'https://drive.google.com/thumbnail?id='+id+'&sz=w1600';
+ }
+ if(/^[A-Za-z0-9_-]{20,}$/.test(raw))return kind==='audio'?'https://drive.google.com/uc?export=download&id='+raw:'https://drive.google.com/thumbnail?id='+raw+'&sz=w1600';
+ return raw;
+}
 function call(fn,...args){
  if(fn==='apiGetPublicData')return new Promise((resolve,reject)=>{if(!/^https:\/\//.test(APPS_SCRIPT_URL)||APPS_SCRIPT_URL.indexOf('PASTE_')===0){reject(new Error('Konfigurasikan APPS_SCRIPT_URL pada file index.html GitHub.'));return;}const cb='crmJsonp_'+Date.now()+'_'+Math.floor(Math.random()*100000);const s=document.createElement('script');const cleanup=()=>{delete window[cb];s.remove();};window[cb]=data=>{cleanup();resolve(data);};s.onerror=()=>{cleanup();reject(new Error('Gagal mengambil data dari Apps Script.'));};s.src=APPS_SCRIPT_URL+'?action=publicData&guest='+encodeURIComponent(args[0]||'')+'&callback='+cb;document.head.appendChild(s);});
  return Promise.reject(new Error('API tidak tersedia pada halaman statis.'));
